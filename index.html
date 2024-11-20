@@ -59,30 +59,62 @@
         productVersion: "0.1"
     };
 
-    // Custom handling for split data files
-    const originalFetch = fetch;
+    // Patch UnityLoader to support multiple data files
+    const originalUnityLoaderFetch = fetch;
     fetch = async function (url, ...args) {
-        if (url.endsWith("/data.unityweb")) {
-            try {
-                const part1 = await originalFetch(buildUrl + "/data_part1.br");
-                const part2 = await originalFetch(buildUrl + "/data_part2.br");
+        if (url.endsWith("/data.br")) {
+            const part1 = await originalUnityLoaderFetch(buildUrl + "/part1.data.br");
+            const part2 = await originalUnityLoaderFetch(buildUrl + "/part1.data2.br");
+            
+            const part1Buffer = await part1.arrayBuffer();
+            const part2Buffer = await part2.arrayBuffer();
 
-                const part1Buffer = await part1.arrayBuffer();
-                const part2Buffer = await part2.arrayBuffer();
+            const combinedBuffer = new Uint8Array(part1Buffer.byteLength + part2Buffer.byteLength);
+            combinedBuffer.set(new Uint8Array(part1Buffer), 0);
+            combinedBuffer.set(new Uint8Array(part2Buffer), part1Buffer.byteLength);
 
-                const combinedBuffer = new Uint8Array(part1Buffer.byteLength + part2Buffer.byteLength);
-                combinedBuffer.set(new Uint8Array(part1Buffer), 0);
-                combinedBuffer.set(new Uint8Array(part2Buffer), part1Buffer.byteLength);
-
-                return new Response(combinedBuffer.buffer);
-            } catch (error) {
-                console.error("Error combining data files:", error);
-                throw error;
-            }
+            return new Response(combinedBuffer.buffer);
         }
-        return originalFetch(url, ...args);
+        return originalUnityLoaderFetch(url, ...args);
     };
 
+    const container = document.querySelector("#unity-container");
+    const canvas = document.querySelector("#unity-canvas");
+    const loadingCover = document.querySelector("#loading-cover");
+    const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
+    const progressBarFull = document.querySelector("#unity-progress-bar-full");
+    const spinner = document.querySelector('.spinner');
+
+    const script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+            spinner.style.display = "none";
+            progressBarEmpty.style.display = "";
+            progressBarFull.style.width = `${100 * progress}%`;
+        }).then((unityInstance) => {
+            loadingCover.style.display = "none";
+        }).catch((message) => {
+            console.error(message);
+        });
+    };
+
+    document.body.appendChild(script);
+</script>
+<script>
+        const hideFullScreenButton = "";
+    const buildUrl = "Build";
+    const loaderUrl = buildUrl + "/bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js";
+    const config = {
+        dataUrl: buildUrl + "/data.br", // Varsayılan olarak belirtilen data URL
+        frameworkUrl: buildUrl + "/3bdee5d98137a8f120f66346e7161c1b.framework.js.br",
+        codeUrl: buildUrl + "/d0235a605c0ac659fe94aeffbd1611ce.wasm.br",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "GtaArcade",
+        productVersion: "0.1"
+    };
+    
         const container = document.querySelector("#unity-container");
         const canvas = document.querySelector("#unity-canvas");
         const loadingCover = document.querySelector("#loading-cover");

@@ -175,6 +175,7 @@
             else return false;
         }
 
+        setTimeout(StartUnityInstance_IfUnloaded, 5000);
         InitYSDK();
         async function InitYSDK() {
             try {

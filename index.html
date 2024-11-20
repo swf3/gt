@@ -50,7 +50,7 @@
     const buildUrl = "Build";
     const loaderUrl = buildUrl + "/bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js";
     const config = {
-        dataUrl: buildUrl + "/data.br", // Varsayılan olarak belirtilen data URL
+        dataUrl: buildUrl + "/d0235a605c0ac659fe94aeffbd1611ce.br", // Varsayılan olarak belirtilen data URL
         frameworkUrl: buildUrl + "/3bdee5d98137a8f120f66346e7161c1b.framework.js.br",
         codeUrl: buildUrl + "/d0235a605c0ac659fe94aeffbd1611ce.wasm.br",
         streamingAssetsUrl: "StreamingAssets",
@@ -62,7 +62,7 @@
     // Patch UnityLoader to support multiple data files
     const originalUnityLoaderFetch = fetch;
     fetch = async function (url, ...args) {
-        if (url.endsWith("/data.br")) {
+        if (url.endsWith("/d0235a605c0ac659fe94aeffbd1611ce.br")) {
             const part1 = await originalUnityLoaderFetch(buildUrl + "/part1.data.br");
             const part2 = await originalUnityLoaderFetch(buildUrl + "/part1.data2.br");
             
@@ -106,7 +106,7 @@
     const buildUrl = "Build";
     const loaderUrl = buildUrl + "/bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js";
     const config = {
-        dataUrl: buildUrl + "/data.br", // Varsayılan olarak belirtilen data URL
+        dataUrl: buildUrl + "/d0235a605c0ac659fe94aeffbd1611ce.br", // Varsayılan olarak belirtilen data URL
         frameworkUrl: buildUrl + "/3bdee5d98137a8f120f66346e7161c1b.framework.js.br",
         codeUrl: buildUrl + "/d0235a605c0ac659fe94aeffbd1611ce.wasm.br",
         streamingAssetsUrl: "StreamingAssets",

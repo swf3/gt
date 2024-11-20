@@ -50,6 +50,7 @@
     const buildUrl = "Build";
     const loaderUrl = buildUrl + "/bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js";
     const config = {
+        dataUrl: buildUrl + "/data.unityweb", // Varsayılan olarak belirtilen data URL
         frameworkUrl: buildUrl + "/3bdee5d98137a8f120f66346e7161c1b.framework.js.br",
         codeUrl: buildUrl + "/d0235a605c0ac659fe94aeffbd1611ce.wasm.br",
         streamingAssetsUrl: "StreamingAssets",
@@ -59,23 +60,28 @@
     };
 
     // Custom handling for split data files
-    config.dataUrl = new Promise(async (resolve, reject) => {
-        try {
-            const part1 = await fetch(buildUrl + "/data_part1.br");
-            const part2 = await fetch(buildUrl + "/data_part2.br");
+    const originalFetch = fetch;
+    fetch = async function (url, ...args) {
+        if (url.endsWith("/data.unityweb")) {
+            try {
+                const part1 = await originalFetch(buildUrl + "/data_part1.br");
+                const part2 = await originalFetch(buildUrl + "/data_part2.br");
 
-            const part1Buffer = await part1.arrayBuffer();
-            const part2Buffer = await part2.arrayBuffer();
+                const part1Buffer = await part1.arrayBuffer();
+                const part2Buffer = await part2.arrayBuffer();
 
-            const combinedBuffer = new Uint8Array(part1Buffer.byteLength + part2Buffer.byteLength);
-            combinedBuffer.set(new Uint8Array(part1Buffer), 0);
-            combinedBuffer.set(new Uint8Array(part2Buffer), part1Buffer.byteLength);
+                const combinedBuffer = new Uint8Array(part1Buffer.byteLength + part2Buffer.byteLength);
+                combinedBuffer.set(new Uint8Array(part1Buffer), 0);
+                combinedBuffer.set(new Uint8Array(part2Buffer), part1Buffer.byteLength);
 
-            resolve(new Blob([combinedBuffer]));
-        } catch (error) {
-            reject("Error combining data files: " + error.message);
+                return new Response(combinedBuffer.buffer);
+            } catch (error) {
+                console.error("Error combining data files:", error);
+                throw error;
+            }
         }
-    });
+        return originalFetch(url, ...args);
+    };
 
         const container = document.querySelector("#unity-container");
         const canvas = document.querySelector("#unity-canvas");
